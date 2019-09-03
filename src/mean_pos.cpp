@@ -8,6 +8,13 @@
 class coor
 {
     public:
+        coor(void)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+        }
+
         coor(float x_in, float y_in, float z_in)
         {
             x = x_in;
@@ -25,9 +32,6 @@ class residue
         {
             resn = resname;
             resid = resID;
-            coordinate.x = 0;
-            coordinate.y = 0;
-            coordinate.z = 0;
         }
 
     std::string resn;
@@ -40,6 +44,13 @@ void sum_coor(residue& input_res, residue& output_res)
     output_res.coordinate.x += input_res.coordinate.x;
     output_res.coordinate.y += input_res.coordinate.y;
     output_res.coordinate.z += input_res.coordinate.z;
+}
+
+void avg_coor(residue& input_res, int N)
+{
+    input_res.coordinate.x /= N;
+    input_res.coordinate.y /= N;
+    input_res.coordinate.z /= N;
 }
 
 int main(int argc, char* argv[])
@@ -77,9 +88,9 @@ int main(int argc, char* argv[])
         /* read 8 residues */
         if (iss >> resname >> ID >> x >> y >> z) {
             res_buffer.push_back(residue(resname, ID));
-            res_buffer.end().coodinate.x = x;
-            res_buffer.end().coodinate.y = y;
-            res_buffer.end().coodinate.z = z;
+            res_buffer.end()->coordinate.x = x;
+            res_buffer.end()->coordinate.y = y;
+            res_buffer.end()->coordinate.z = z;
         } else {
             /* sum up all frames of coordinates */
             for (int i = 0; i < 8; i++) {
@@ -88,6 +99,17 @@ int main(int argc, char* argv[])
             frames++;
         }
     }
+
+    mean_file << "avg coordinates: \n";
+
+    for (int i = 0; i < 8; i++) {
+        avg_coor(entrance_res[i], frames);
+        mean_file << entrance_res[i].resn << " " << entrance_res[i].resid 
+        << " " << entrance_res[i].coordinate.x << " " 
+        << entrance_res[i].coordinate.y << " " << entrance_res[i].coordinate.z 
+        << std::endl;
+    }
+
 
     coor_file.close();
     mean_file.close();
