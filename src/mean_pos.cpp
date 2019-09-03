@@ -22,6 +22,13 @@ class coor
             z = z_in;
         }
 
+        void update(float new_x, float new_y, float new_z)
+        {
+            x = new_x;
+            y = new_y;
+            z = new_z;
+        }
+
         float x, y, z;
 };
 
@@ -88,14 +95,16 @@ int main(int argc, char* argv[])
         /* read 8 residues */
         if (iss >> resname >> ID >> x >> y >> z) {
             res_buffer.push_back(residue(resname, ID));
-            res_buffer.end()->coordinate.x = x;
-            res_buffer.end()->coordinate.y = y;
-            res_buffer.end()->coordinate.z = z;
+            (res_buffer.end() - 1)->coordinate.update(x, y ,z);
         } else {
             /* sum up all frames of coordinates */
-            for (int i = 0; i < 8; i++) {
-                sum_coor(res_buffer[i], entrance_res[i]);
+            if (res_buffer.size() > 0) {
+                for (int i = 0; i < 8; i++) {
+                    sum_coor(res_buffer[i], entrance_res[i]);
+                }
             }
+            
+            res_buffer.clear();
             frames++;
         }
     }
