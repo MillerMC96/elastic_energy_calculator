@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     std::vector<residue> res_buffer;
     std::vector<residue> entrance_res;
     float x, y, z;
-    int frames = 1;
+    int frames = 0;
     int ID;
 
     coor_file.open(argv[1]);
