@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
     std::string line, resname;
     float x, y, z;
     int ID;
-    int frames = 0;
+    int frames = 1;
 
     coor_file.open(argv[1]);
     mean_file.open(argv[2]);
@@ -116,15 +116,14 @@ int main(int argc, char* argv[])
             (res_buffer.end() - 1)->coordinate.update(x, y ,z);
         } else {
             /* sum up all frames of coordinates */
-            frames++;
             if (res_buffer.size() > 0) {
                 for (int i = 0; i < 8; i++) {
-                    elastic_energy = calculate_ssr(res_buffer, mean_buffer);
-                    energy_file << frames << ": " << elastic_energy 
-                    << std::endl;
+                    elastic_energy += calculate_ssr(res_buffer, mean_buffer);
                 }
             }
-            
+            energy_file << frames << ": " << elastic_energy << std::endl;
+            frames++;
+            elastic_energy = 0;
             res_buffer.clear();
         }
     }
