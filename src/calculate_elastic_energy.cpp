@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
                     elastic_energy += calculate_ssr(res_buffer, mean_buffer);
                 }
             
-                energy_file << frames << ": " << elastic_energy << std::endl;
+                energy_file << frames << " " << elastic_energy << std::endl;
                 frames++;
                 elastic_energy = 0;
                 res_buffer.clear();
