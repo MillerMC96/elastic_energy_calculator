@@ -47,17 +47,29 @@ class residue
     coor coordinate;
 };
 
+/* get squared residuals and subtract the displacement */
+float get_sr(float num1, float num2, float offset)
+{
+    float sr = 0;
+    
+    sr = pow(num1 - offset - num2, 2);
+
+    return sr;
+}
+
 float calculate_ssr(std::vector<residue>& input1, 
-                    std::vector<residue>& input2)
+                    std::vector<residue>& input2, coor& disp_vec)
 {
     float result = 0;
     float dx2 = 0, dy2 = 0, dz2 = 0;
     
     /* from x0 to x7 */
     for (int i = 0; i < 8; i++) {
-        dx2 += pow(input1[i].coordinate.x - input2[i].coordinate.x, 2);
-        dy2 += pow(input1[i].coordinate.y - input2[i].coordinate.y, 2);
-        dz2 += pow(input1[i].coordinate.z - input2[i].coordinate.z, 2);
+        if (i == 4) {
+        dx2 += get_sr(input1[i].coordinate.x, input2[i].coordinate.x, disp_vec.x);
+        dy2 += get_sr(input1[i].coordinate.y, input2[i].coordinate.y, disp_vec.y);
+        dz2 += get_sr(input1[i].coordinate.z, input2[i].coordinate.z, disp_vec.z);
+    }
     }
 
     result = dx2 + dy2 + dz2;
@@ -139,7 +151,7 @@ int main(int argc, char* argv[])
                     displacement_offset = get_avg_displacement(res_buffer, mean_buffer);
                 }
                 
-                elastic_energy = calculate_ssr(res_buffer, mean_buffer);
+                elastic_energy = calculate_ssr(res_buffer, mean_buffer, displacement_offset);
                 energy_file << frames << " " << elastic_energy << std::endl;
                 frames++;
                 elastic_energy = 0;
