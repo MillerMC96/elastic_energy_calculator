@@ -57,6 +57,23 @@ float get_sr(float num1, float num2, float offset)
     return sr;
 }
 
+double get_distance(std::vector<residue>& couple)
+{
+    float x1, y1, z1, x2, y2, z2;
+    float dist_sq;
+
+    x1 = couple[0].coordinate.x;
+    x2 = couple[1].coordinate.x;
+    y1 = couple[0].coordinate.y;
+    y2 = couple[1].coordinate.y;
+    z1 = couple[0].coordinate.z;
+    z2 = couple[1].coordinate.z;
+    
+    dist_sq = pow(x2 - x1, 2) + pow(y2 - y1, 2) + pow(z2 - z1, 2);
+
+    return sqrt(dist_sq);
+}
+
 float calculate_ssr(std::vector<residue>& input1, 
                     std::vector<residue>& input2, coor& disp_vec)
 {
@@ -108,7 +125,26 @@ void get_dist_pairs(const std::vector<residue>& input_array, std::vector<std::ve
             one_pair.clear();
             it++;
         }
+        it = residue_array.begin();
     }
+}
+
+float calculate_energy(std::vector<std::vector<residue>>& pairs_vec, std::vector<std::vector<residue>>& crystal_struct)
+{
+    int size = pairs_vec.size();
+    float energy = 0;
+    //di
+    double disti;
+    //d0
+    double dist0;
+
+    for (int i = 0; i < size; i++) {
+        disti = get_distance(pairs_vec[i]);
+        dist0 = get_distance(crystal_struct[i]);
+        energy += pow(1 - disti/dist0, 2);
+    }
+
+    return energy;
 }
 
 void read_residues(std::ifstream& input_file, std::vector<residue>& res_buffer)
@@ -137,11 +173,12 @@ int main(int argc, char* argv[])
     }
 
     std::ifstream coor_file;
-    std::ifstream mean_file;
+    std::ifstream crystal_file;
     std::ofstream energy_file;
     std::vector<residue> res_buffer;
-    std::vector<residue> mean_buffer;
+    std::vector<residue> crystal_buffer;
     std::vector<residue> energy_buffer;
+    std::vector<std::vector<residue>> crystal_pairs;
     std::vector<std::vector<residue>> dist_pairs;
     float elastic_energy;
     std::string line, resname;
@@ -151,11 +188,11 @@ int main(int argc, char* argv[])
     coor displacement_offset;
 
     coor_file.open(argv[1]);
-    mean_file.open(argv[2]);
+    crystal_file.open(argv[2]);
     energy_file.open(argv[3]);
 
-    read_residues(mean_file, mean_buffer);
-    get_dist_pairs(mean_buffer, dist_pairs);
+    read_residues(crystal_file, crystal_buffer);
+    get_dist_pairs(crystal_buffer, crystal_pairs);
 
     while (std::getline(coor_file, line)) {
         std::stringstream iss(line);
@@ -167,10 +204,10 @@ int main(int argc, char* argv[])
             /* sum up all frames of coordinates */
             if (res_buffer.size() > 0) {
                 if (frames == 1) {
-                    displacement_offset = get_avg_displacement(res_buffer, mean_buffer);
+                    displacement_offset = get_avg_displacement(res_buffer, crystal_buffer);
                 }
                 
-                elastic_energy = calculate_ssr(res_buffer, mean_buffer, displacement_offset);
+                elastic_energy = calculate_ssr(res_buffer, crystal_buffer, displacement_offset);
                 energy_file << frames << " " << elastic_energy << std::endl;
                 frames++;
                 elastic_energy = 0;
@@ -180,6 +217,6 @@ int main(int argc, char* argv[])
     }
 
     coor_file.close();
-    mean_file.close();
+    crystal_file.close();
     energy_file.close();
 }
