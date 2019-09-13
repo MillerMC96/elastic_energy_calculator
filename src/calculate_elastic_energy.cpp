@@ -65,11 +65,9 @@ float calculate_ssr(std::vector<residue>& input1,
     
     /* from x0 to x7 */
     for (int i = 0; i < 8; i++) {
-        if (i == 4) {
         dx2 += get_sr(input1[i].coordinate.x, input2[i].coordinate.x, disp_vec.x);
         dy2 += get_sr(input1[i].coordinate.y, input2[i].coordinate.y, disp_vec.y);
         dz2 += get_sr(input1[i].coordinate.z, input2[i].coordinate.z, disp_vec.z);
-    }
     }
 
     result = dx2 + dy2 + dz2;
@@ -94,6 +92,25 @@ coor get_avg_displacement(std::vector<residue>& input, std::vector<residue>& mea
     return coor(dx, dy, dz);
 }
 
+void get_dist_pairs(const std::vector<residue>& input_array, std::vector<std::vector<residue>>& pairs_vec)
+{
+    std::vector<residue> residue_array = input_array;
+    std::vector<residue> one_pair;
+    std::vector<residue>::iterator it = residue_array.begin();
+
+    while (residue_array.size() > 1) {
+        residue cur_res = residue_array.front();
+        residue_array.erase(residue_array.begin());
+        while (it != residue_array.end()) {
+            one_pair.push_back(cur_res);
+            one_pair.push_back(*it);
+            pairs_vec.push_back(one_pair);
+            one_pair.clear();
+            it++;
+        }
+    }
+}
+
 void read_residues(std::ifstream& input_file, std::vector<residue>& res_buffer)
 {
     std::string line, resname;
@@ -105,7 +122,7 @@ void read_residues(std::ifstream& input_file, std::vector<residue>& res_buffer)
         /* read 8 residues */
         if (iss >> resname >> ID >> x >> y >> z) {
             res_buffer.push_back(residue(resname, ID));
-            (res_buffer.end() - 1)->coordinate.update(x, y ,z);
+            (res_buffer.end() - 1)->coordinate.update(x, y, z);
         }
     }
 }
@@ -125,6 +142,7 @@ int main(int argc, char* argv[])
     std::vector<residue> res_buffer;
     std::vector<residue> mean_buffer;
     std::vector<residue> energy_buffer;
+    std::vector<std::vector<residue>> dist_pairs;
     float elastic_energy;
     std::string line, resname;
     float x, y, z;
@@ -137,6 +155,7 @@ int main(int argc, char* argv[])
     energy_file.open(argv[3]);
 
     read_residues(mean_file, mean_buffer);
+    get_dist_pairs(mean_buffer, dist_pairs);
 
     while (std::getline(coor_file, line)) {
         std::stringstream iss(line);
