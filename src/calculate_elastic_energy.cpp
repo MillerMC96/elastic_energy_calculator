@@ -129,9 +129,23 @@ void get_dist_pairs(const std::vector<residue>& input_array, std::vector<std::ve
     }
 }
 
+float calculate_crystal_energy(std::vector<std::vector<residue>>& crystal_struct)
+{
+    float energy = 0;
+    double dist0;
+
+    for (int i = 0; i < crystal_struct.size(); i++) {
+        dist0 = get_distance(crystal_struct[i]);
+        energy += dist0 * dist0;
+    }
+
+    return energy;
+}
+
 float calculate_energy(std::vector<std::vector<residue>>& pairs_vec, std::vector<std::vector<residue>>& crystal_struct)
 {
-    int size = pairs_vec.size();
+    /* number of pairs each time */
+    int size = crystal_struct.size();
     float energy = 0;
     //di
     double disti;
@@ -177,7 +191,6 @@ int main(int argc, char* argv[])
     std::ofstream energy_file;
     std::vector<residue> res_buffer;
     std::vector<residue> crystal_buffer;
-    std::vector<residue> energy_buffer;
     std::vector<std::vector<residue>> crystal_pairs;
     std::vector<std::vector<residue>> dist_pairs;
     float elastic_energy;
@@ -203,18 +216,19 @@ int main(int argc, char* argv[])
         } else {
             /* sum up all frames of coordinates */
             if (res_buffer.size() > 0) {
-                if (frames == 1) {
-                    displacement_offset = get_avg_displacement(res_buffer, crystal_buffer);
-                }
-                
-                elastic_energy = calculate_ssr(res_buffer, crystal_buffer, displacement_offset);
+                get_dist_pairs(res_buffer, dist_pairs);
+                elastic_energy = calculate_energy(dist_pairs, crystal_pairs);
                 energy_file << frames << " " << elastic_energy << std::endl;
                 frames++;
                 elastic_energy = 0;
+                /* reset containers */
                 res_buffer.clear();
+                dist_pairs.clear();
             }
         }
     }
+
+    std::cout << "crystal struct energy: " << calculate_crystal_energy(crystal_pairs) << std::endl;
 
     coor_file.close();
     crystal_file.close();
