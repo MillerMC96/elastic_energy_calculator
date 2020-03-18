@@ -63,7 +63,7 @@ void avg_coor(residue& input_res, int N)
 int main(int argc, char* argv[])
 {
     if (argc < 3) {
-        std::cout << "Usage: ./calculate_distance input output" << std::endl;
+        std::cout << "Usage: ./mean_pos input output" << std::endl;
 
         return -1;
     }
