@@ -155,7 +155,7 @@ float calculate_energy(std::vector<std::vector<residue>>& pairs_vec, std::vector
     for (int i = 0; i < size; i++) {
         disti = get_distance(pairs_vec[i]);
         dist0 = get_distance(crystal_struct[i]);
-        energy += pow(1 - disti/dist0, 2);
+        energy += pow(disti - dist0, 2) / dist0;
     }
 
     return energy;
