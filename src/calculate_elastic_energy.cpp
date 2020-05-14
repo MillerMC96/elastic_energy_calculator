@@ -136,6 +136,8 @@ float calculate_crystal_energy(std::vector<std::vector<residue>>& crystal_struct
 
     for (size_t i = 0; i < crystal_struct.size(); i++) {
         dist0 = get_distance(crystal_struct[i]);
+        std::cout << '"' << crystal_struct[i][0].resn << crystal_struct[i][0].resid << "<->" << crystal_struct[i][1].resn << crystal_struct[i][1].resid 
+        << '"'  << ": " << dist0 << "," << std::endl;
         energy += dist0 * dist0;
     }
 
